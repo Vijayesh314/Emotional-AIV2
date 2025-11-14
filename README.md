@@ -1,5 +1,5 @@
 # Emotional-AI
-This is a real-time voice emotion analysis that provides live feedback to help understand emotional states during conversations. Its powered by Google's Gemini 2.0 Flash AI and Firebase Authentication.
+This is a real-time voice emotion analysis that provides live feedback to help understand emotional states during conversations. Its powered by Google's Gemini 2.0 Flash AI and Firebase Authentication (made so that my official CAC submission doesn't have new commits after the submission).
 
 ## How it works
 * Recording starts
