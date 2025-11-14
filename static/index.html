@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Emotion Feedback System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span>EmotionAI <span class="tagline">Live Feedback</span></span>
+                </div>
+                <div class="header-right">
+                    <div id="user-info" class="user-info" style="display: none;">
+                        <span id="user-name"></span>
+                        <button id="logout-btn" class="btn-logout">Logout</button>
+                    </div>
+                    <div id="status-indicator" class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Checking...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="hero">
+                <h1>Real-Time Emotion Detection</h1>
+                <p>Analyze your voice in real-time to detect emotional states and improve communication</p>
+            </div>
+
+            <div class="control-section">
+                <div class="control-card">
+                    <div class="audio-visualizer" id="visualizer">
+                        <canvas id="waveform"></canvas>
+                    </div>
+                    
+                    <div class="controls">
+                        <button id="startBtn" class="btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                            Start Recording
+                        </button>
+                        <button id="stopBtn" class="btn-secondary" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="6" y="6" width="12" height="12" rx="2"/>
+                            </svg>
+                            Stop Recording
+                        </button>
+                    </div>
+
+                    <div id="recording-status" class="recording-status">
+                        <span class="pulse-dot"></span>
+                        <span>Ready to record</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-section" class="results-section">
+                <div class="emotion-display">
+                    <div class="emotion-main">
+                        <div id="emotion-indicator" class="emotion-indicator neutral">
+                            <div class="emotion-icon">😐</div>
+                            <div class="emotion-label">Neutral</div>
+                            <div class="emotion-confidence">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="emotion-analysis">
+                        <h3>Analysis</h3>
+                        <p id="emotion-analysis-text">Start recording to see live emotion analysis...</p>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-label">Pitch</div>
+                        <div id="pitch-value" class="feature-value">--</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-label">Pace</div>
+                        <div id="pace-value" class="feature-value">--</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-label">Energy</div>
+                        <div id="energy-value" class="feature-value">--</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-label">Clarity</div>
+                        <div id="clarity-value" class="feature-value">--</div>
+                    </div>
+                </div>
+
+                <div class="emotion-history">
+                    <h3>Emotion Timeline</h3>
+                    <div id="emotion-timeline" class="timeline">
+                        <p class="timeline-empty">No data yet. Start recording to see your emotion timeline.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Authentication Check -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDATybTCeNdAN-xKRv1sii9EisRVX5thUQ",
+            authDomain: "emotional-ai-476418.firebaseapp.com",
+            projectId: "emotional-ai-476418",
+            storageBucket: "emotional-ai-476418.firebasestorage.app",
+            messagingSenderId: "592188991243",
+            appId: "1:592188991243:web:363081ce47b4b1f719e40e",
+            measurementId: "G-4S4C8170VZ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Check authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                console.log('User authenticated:', user.email);
+                
+                // Update UI with user info
+                document.getElementById('user-info').style.display = 'flex';
+                document.getElementById('user-name').textContent = user.displayName || user.email;
+                
+                // Store user info globally for the app
+                window.currentUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName
+                };
+            } else {
+                // No user is signed in, redirect to login
+                console.log('No user authenticated, redirecting to login');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
